@@ -113,8 +113,8 @@ export default function App() {
       crop: {
         width: Math.min(width, height),
         height: Math.min(width, height),
-        originX: 0,
-        originY: 0
+        originX: 0.5,
+        originY: 0.5
       },
     }];
     const saveOptions = {
