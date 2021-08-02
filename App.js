@@ -110,13 +110,15 @@ export default function App() {
 
   async function resizeImage(imageUrl, width, height){
     const actions = [{
-      resize: {
-        width,
-        height
+      crop: {
+        width: Math.min(width, height),
+        height: Math.min(width, height),
+        originX: 0,
+        originY: 0
       },
     }];
     const saveOptions = {
-      compress: 0.75,
+      compress: 1,
       format: ImageManipulator.SaveFormat.JPEG,
       base64: true,
     };
@@ -128,7 +130,10 @@ export default function App() {
     // const _image = Asset.fromModule(require('./assets/dd.jpg'));
     // const _image = await fetch(imageLink, {}, {isBinary: true});
     // let _image = await cropImage(imageLink, Math.min(size.height, size.width) , Math.min(size.height, size.width));
-    let _image = await resizeImage(imageLink, 224 , 224);
+
+    let _image = await resizeImage(imageLink, size.width , size.height);
+    // setImageLink(_image.uri)
+
 
     console.log(_image.height)
     // const imageBuffer = await _image.arrayBuffer()
@@ -147,9 +152,13 @@ export default function App() {
     // myModel.summary();
 
     // let imageTensor = await imageToTensor(imageBuffer)
-    let imageTensor = await base64ImageToTensor(_image.base64);
+    let imageTensor = base64ImageToTensor(_image.base64);
     // imageTensor = tf.image.resizeNearestNeighbor(imageTensor, [244,244])
-    imageTensor = imageTensor.reshape([1, 224, 224, 3])
+    imageTensor =  imageTensor.resizeNearestNeighbor([224,224])
+    const offset = tf.scalar(127.5);
+    const normalized = imageTensor.sub(offset).div(offset);
+    imageTensor = normalized.reshape([1, 224, 224, 3]);
+    // console.log(imageTensor)
     //const prediction = await myModel.classify(imageTensor)
 
      const prediction = await myModel.predict(imageTensor);
@@ -191,7 +200,7 @@ export default function App() {
     try {
       console.log("[+] Retrieving image from link :" + imageLink)
       const _image = await fetch(imageLink, {}, {isBinary: true});
-      setImage(_image);
+      // setImage(_image);
       // const rawImageData = await response.arrayBuffer();
       // const imageTensor = imageToTensor(rawImageData).resizeBilinear([224, 224])
       // const faces = await faceDetector.estimateFaces(imageTensor, false);
@@ -231,6 +240,7 @@ export default function App() {
             onPress={() => {
               camera.takePictureAsync({quality: 0, skipProcessing: true}).then(res => {
                 setImageLink(res.uri)
+                setImage(res)
                 console.log(res.height, res.width)
                 setSize({height: res.height, width: res.width})
               })
@@ -258,7 +268,7 @@ export default function App() {
       />
 
       <Image
-        style={{width: 224, height: 224, borderWidth: 2, borderColor: "black", resizeMode: "contain"}}
+        style={{width: 224, height: 224, borderWidth: 2, borderColor: "black", resizeMode:"cover"}}
         source={{
           uri: imageLink
         }}
@@ -289,7 +299,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   camera: {
-    height: 180,
+    height: 320,
     width: 180,
   },
   buttonContainer: {
