@@ -127,8 +127,8 @@ export default function App() {
     console.log("[+] Retrieving image from link :" + imageLink)
     // const _image = Asset.fromModule(require('./assets/dd.jpg'));
     // const _image = await fetch(imageLink, {}, {isBinary: true});
-    let _image = await cropImage(imageLink, Math.min(size.height, size.width) , Math.min(size.height, size.width));
-    // _image = await resizeImage(_image.uri, 224 , 224);
+    // let _image = await cropImage(imageLink, Math.min(size.height, size.width) , Math.min(size.height, size.width));
+    let _image = await resizeImage(imageLink, 224 , 224);
 
     console.log(_image.height)
     // const imageBuffer = await _image.arrayBuffer()
@@ -148,8 +148,8 @@ export default function App() {
 
     // let imageTensor = await imageToTensor(imageBuffer)
     let imageTensor = await base64ImageToTensor(_image.base64);
-    imageTensor = tf.image.resizeNearestNeighbor(imageTensor, [244,244])
-    // imageTensor = imageTensor.reshape([1, 224, 224, 3])
+    // imageTensor = tf.image.resizeNearestNeighbor(imageTensor, [244,244])
+    imageTensor = imageTensor.reshape([1, 224, 224, 3])
     //const prediction = await myModel.classify(imageTensor)
 
      const prediction = await myModel.predict(imageTensor);
